@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Encoding">
-    <file url="file://$PROJECT_DIR$/all_cities.txt" charset="windows-1251" />
-    <file url="file://$PROJECT_DIR$/cities.txt" charset="windows-1251" />
     <file url="file://$PROJECT_DIR$/gent-cities.txt" charset="windows-1251" />
-    <file url="file://$PROJECT_DIR$/regions.txt" charset="windows-1251" />
+    <file url="file://$PROJECT_DIR$/resources/all_cities.txt" charset="windows-1251" />
+    <file url="file://$PROJECT_DIR$/resources/all_cities.txt" charset="windows-1251" />
+    <file url="file://$PROJECT_DIR$/resources/cities.txt" charset="windows-1251" />
+    <file url="file://$PROJECT_DIR$/resources/cities.txt" charset="windows-1251" />
+    <file url="file://$PROJECT_DIR$/resources/regions.txt" charset="windows-1251" />
+    <file url="file://$PROJECT_DIR$/resources/regions.txt" charset="windows-1251" />
     <file url="file://$PROJECT_DIR$/../../basicprogramming.csv" charset="windows-1251" />
   </component>
 </project>

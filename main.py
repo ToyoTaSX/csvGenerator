@@ -12,7 +12,11 @@ def to_lowercase_without_symbols(s: str):
     return new
 
 
-def parse_lawers_from_txt(filename):
+def parse_morphems_from_txt(filename):
+    """
+        Парсит уровни, локации и названия из txt файла в именительном падеже
+        Возвращает множества пар морфем в именительном-творительном падеже, из тех которые получилось перевести
+    """
     lines = open(filename, "r", encoding="UTF-8").readlines()
     lawers_and_levels = set()
     locations = set()
@@ -34,29 +38,16 @@ def parse_lawers_from_txt(filename):
     lawers_splited = [[c.strip() for c in i.split()] for i in lawers_and_levels if len(i.split()) == 2]
     levels_noun = {i[1] for i in lawers_splited}
     lawers_noun = {i[0] for i in lawers_splited}
-
     return noun_to_ablt_set(lawers_noun), locations, noun_to_ablt_set(levels_noun)
 
 
-def noun_to_ablt_set(words):
-    morph = pymorphy3.MorphAnalyzer()
-    res = set()
-    try:
-        res = {(l, morph.parse(l)[0].inflect({'ablt'}).word.capitalize()) for l in words}
-    except:
-        pass
-    return res
-
-
-def noun_to_gent_word(word):
-    word = word.strip()
-    morph = pymorphy3.MorphAnalyzer()
-    return morph.parse(word)[0].inflect({'gent'}).word
-
-
-def get_lawers_locations_levels_tp_pairs():
+def parse_morphems_from_dataset(filename):
+    """
+        Парсит уровни, локации и названия из готовго датасета (включая творительный падеж)
+        Возвращает множества пар именительный-творительный падеж
+    """
     lawers_with_pos = []
-    with open("lawers.csv", encoding='utf-8') as r_file:
+    with open(filename, encoding='utf-8') as r_file:
         file_reader = csv.reader(r_file, delimiter=",")
         file_reader.__next__()
         for row in file_reader:
@@ -87,7 +78,32 @@ def get_lawers_locations_levels_tp_pairs():
     return lawers, locations, levels
 
 
+def noun_to_ablt_set(words):
+    """
+        Переводит все слова в творительный падеж и возвращает множество пар именительный-творительный падеж
+    """
+    morph = pymorphy3.MorphAnalyzer()
+    res = set()
+    try:
+        res = {(l, morph.parse(l)[0].inflect({'ablt'}).word.capitalize()) for l in words}
+    except:
+        pass
+    return res
+
+
+def noun_to_gent_word(word):
+    """
+        Переводит слово из именительного в творительный падеж
+    """
+    word = word.strip()
+    morph = pymorphy3.MorphAnalyzer()
+    return morph.parse(word)[0].inflect({'gent'}).word
+
+
 def generate_full(lawers, locations, levels):
+    """
+        Генерирует все комбинации названий, уровней и локаций
+    """
     dataset = []
     for location in locations:
         for level in levels:
@@ -99,6 +115,9 @@ def generate_full(lawers, locations, levels):
 
 
 def generate_hardcoded(locations):
+    """
+        Генерирует все названия в которых нет местоположения и уровня
+    """
     dataset = []
     for location in locations:
         lw = f"Арбитражный суд {location}"
@@ -178,6 +197,9 @@ def generate_hardcoded(locations):
 
 
 def generate_once(lawers, locations, levels):
+    """
+        Генерирует по одному суду каждого названия с рандомным уровнем и местоположением
+    """
     dataset = []
     locations = list(locations)
     levels = list(levels)
@@ -191,6 +213,9 @@ def generate_once(lawers, locations, levels):
 
 
 def capitalize_locations(loc, cities, regions):
+    """
+        Выделяет заглаными буквами города и регионы в местоположении
+    """
     lowercased_input = loc.lower()  # Приводим всю строку к нижнему регистру
     prefixes = ["обл.", 'о.', 'г.', 'гор.', 'р.', "респ. и."]
     prefixes_without_dot = [i.replace(".", "") for i in prefixes]
@@ -215,7 +240,7 @@ def capitalize_locations(loc, cities, regions):
             continue
 
         if word in cities or word in regions:
-                result.append(word.capitalize())
+            result.append(word.capitalize())
         else:
             result.append(word)  # Если слово не найдено в списке, добавляем его без изменений
     return ' '.join(result)  # Объединяем слова обратно в строку
@@ -230,8 +255,9 @@ def write_csv(filename, data):
 
 
 #Парсинг всех токенов и объединение
-lawers1, locations1, levels1 = parse_lawers_from_txt("реальные суды.txt")
-lawers2, locations2, levels2 = get_lawers_locations_levels_tp_pairs()
+lawers1, locations1, levels1 = parse_morphems_from_txt("resources/реальные суды.txt")
+
+lawers2, locations2, levels2 = parse_morphems_from_dataset("resources/lawers.csv")
 
 levels_unhandled = {tuple((t.lower() for t in i)) for i in levels1 | levels2}
 levels = {i for i in levels_unhandled if i[0].lower() != i[1].lower()}
@@ -240,8 +266,8 @@ lawers_unhandled = {tuple((t.capitalize() for t in i)) for i in lawers1 | lawers
 lawers = {i for i in lawers_unhandled if i[0].lower() != i[1].lower()}
 
 #Выделение городов
-cities = [i.strip() for i in open("all_cities.txt", "r", encoding="windows-1251").readlines()]
-regions = [i.strip() for i in open('regions.txt', "r", encoding="windows-1251").readlines()]
+cities = [i.strip() for i in open("resources/all_cities.txt", "r", encoding="windows-1251").readlines()]
+regions = [i.strip() for i in open('resources/regions.txt', "r", encoding="windows-1251").readlines()]
 locations = {capitalize_locations(i, cities, regions) for i in locations1 | locations2}
 print(f"Количество названий: {len(lawers)}")
 print(f"Пример: {random.choice(list(lawers))}")
